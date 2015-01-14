@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Index - Gruntlr</title>
+    </head>
+    <body>
+        <h1>Welcome to Gruntlr!</h1>
+        {% for message in get_flashed_messages() %}
+            <p><b>Error</b>: {{ message }}</p>
+        {% endfor %}
+        {% if current_user.is_authenticated() %}
+            <h2>Hi, {{ current_user.name }}!</h2>
+            <p><a href="{{ url_for('user_companies') }}">JSON list of companies worked at</a></p>
+            <p><a href="{{ url_for('logout') }}">Logout</a></p>
+        {% else %}
+            <h2>I don't know you!</h2>
+            <p><a href="{{ url_for('linkedin_authorize') }}">Login with LinkedIn</a></p>
+        {% endif %}
+    </body>
+</html>
