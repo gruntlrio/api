@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for, render_template, flash, jsonify, request
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from linkedin_wrapper import LinkedInWrapper
+from linkedin_wrapper import LinkedInWrapper, LinkedInUnauthorized
 
 
 SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite'
@@ -90,7 +90,12 @@ def linkedin_callback():
 @app.route('/user/companies')
 @login_required
 def user_companies():
-    return jsonify(companies=get_linkedin().get_companies_worked_at())
+    try:
+        return jsonify(companies=get_linkedin().get_companies_worked_at())
+    except LinkedInUnauthorized:
+        logout_user()
+        flash('Authentication failed.')
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     db.create_all()
