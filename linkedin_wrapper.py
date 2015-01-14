@@ -3,14 +3,20 @@ from linkedin import linkedin
 
 
 class LinkedInWrapper(object):
-    def __init__(self, linkedin_key, linkedin_secret, callback_url):
-        self.authentication = linkedin.LinkedInAuthentication(
-            linkedin_key,
-            linkedin_secret,
-            callback_url,
-            linkedin.PERMISSIONS.enums.values())
+    def __init__(self, linkedin_key, linkedin_secret, callback_url, token=None):
+        self.authentication = None
+        self.application = None
+        self.token = None
 
-        self.application = linkedin.LinkedInApplication(self.authentication)
+        if token is None:
+            self.authentication = linkedin.LinkedInAuthentication(
+                linkedin_key,
+                linkedin_secret,
+                callback_url,
+                linkedin.PERMISSIONS.enums.values())
+        else:
+            self.application = linkedin.LinkedInApplication(token=token)
+            self.token = token
 
     def authorize(self):
         return redirect(self.authentication.authorization_url)
@@ -20,6 +26,13 @@ class LinkedInWrapper(object):
             return None, None
         self.authentication.authorization_code = request.args['code']
         self.authentication.get_access_token()
+        self.token = self.authentication.token[0]
+        self.application = linkedin.LinkedInApplication(self.authentication)
+
+    def get_token(self):
+        return self.token
+
+    def get_profile(self):
         user = self.application.get_profile(selectors=['id', 'formatted-name'])
         return (
             'linkedin$' + user['id'],
